@@ -33,7 +33,7 @@
             android:textSize="18sp"
             app:layout_constraintStart_toEndOf="@id/iv_student_image"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/iv_menu"
             tools:text="José Nabor" />
 
         <TextView
@@ -44,9 +44,19 @@
             android:layout_marginTop="4dp"
             app:layout_constraintStart_toEndOf="@id/iv_student_image"
             app:layout_constraintTop_toBottomOf="@id/tv_student_name"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/iv_menu"
             tools:text="20161545" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <ImageView
+            android:id="@+id/iv_menu"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_more_vert"
+            android:padding="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:contentDescription="Opciones de menú" />
 
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

@@ -1,13 +1,15 @@
 package com.example.practica01
 
 import android.os.Bundle
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.practica01.StudentAdapter
 import com.example.practica01.databinding.ActivityMainBinding
 import com.example.practica01.models.Student
+import com.google.android.material.textfield.TextInputEditText
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), OnStudentMenuItemClickListener {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var studentAdapter: StudentAdapter
@@ -34,28 +36,90 @@ class MainActivity : AppCompatActivity() {
     private fun setupRecyclerView() {
         val recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
-        studentAdapter = StudentAdapter(studentList)
+        studentAdapter = StudentAdapter(studentList, this)
         recyclerView.adapter = studentAdapter
     }
 
     private fun setupAddButton() {
         binding.addStudentButton.setOnClickListener {
-            // Crea un nuevo estudiante
-            val newStudent = Student(
-                "https://cdn-icons-png.flaticon.com/512/6245/6245780.png", // Icono por defecto para un nuevo estudiante
-                "Fernanda",
-                "202027505",
-                "fernanda|.com"
-            )
+            val dialogView = layoutInflater.inflate(R.layout.dialog_add_student, null)
 
-            // Agrega el nuevo estudiante a la lista
-            studentList.add(newStudent)
+            val etName = dialogView.findViewById<TextInputEditText>(R.id.et_student_name)
+            val etId = dialogView.findViewById<TextInputEditText>(R.id.et_student_id)
+            val etEmail = dialogView.findViewById<TextInputEditText>(R.id.et_student_email)
 
-            // Notifica al adaptador que se ha insertado un nuevo elemento en la última posición
-            studentAdapter.notifyItemInserted(studentList.size - 1)
+            AlertDialog.Builder(this)
+                .setTitle("Agregar Nuevo Alumno")
+                .setView(dialogView)
+                .setPositiveButton("Agregar") { dialog, _ ->
+                    val name = etName.text.toString()
+                    val id = etId.text.toString()
+                    val email = etEmail.text.toString()
 
-            // Desplázate al nuevo elemento
-            binding.recyclerView.scrollToPosition(studentList.size - 1)
+                    if (name.isNotEmpty() && id.isNotEmpty() && email.isNotEmpty()) {
+                        val newStudent = Student(
+                            "https://cdn-icons-png.flaticon.com/512/6245/6245780.png",
+                            name,
+                            id,
+                            email
+                        )
+                        studentList.add(newStudent)
+                        studentAdapter.notifyItemInserted(studentList.size - 1)
+                        binding.recyclerView.scrollToPosition(studentList.size - 1)
+                    } else {
+                        Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .setNegativeButton("Cancelar", null)
+                .show()
         }
+    }
+
+    // --- Implementación de los métodos de la interfaz OnStudentMenuItemClickListener ---
+
+    override fun onEditClick(student: Student, position: Int) {
+        // Infla el diseño del diálogo de edición
+        val dialogView = layoutInflater.inflate(R.layout.dialog_add_student, null)
+
+        // Obtiene las referencias a los campos de texto
+        val etName = dialogView.findViewById<TextInputEditText>(R.id.et_student_name)
+        val etId = dialogView.findViewById<TextInputEditText>(R.id.et_student_id)
+        val etEmail = dialogView.findViewById<TextInputEditText>(R.id.et_student_email)
+
+        // Pre-llena los campos con los datos del estudiante
+        etName.setText(student.name)
+        etId.setText(student.studentId)
+        etEmail.setText(student.email)
+
+        // Crea y muestra el cuadro de diálogo
+        AlertDialog.Builder(this)
+            .setTitle("Editar Alumno")
+            .setView(dialogView)
+            .setPositiveButton("Guardar") { dialog, _ ->
+                val updatedName = etName.text.toString()
+                val updatedId = etId.text.toString()
+                val updatedEmail = etEmail.text.toString()
+
+                if (updatedName.isNotEmpty() && updatedId.isNotEmpty() && updatedEmail.isNotEmpty()) {
+                    // Actualiza el objeto Student en la lista
+                    val updatedStudent = Student(student.imageURL, updatedName, updatedId, updatedEmail)
+                    studentList[position] = updatedStudent
+
+                    // Notifica al adaptador que el elemento ha cambiado
+                    studentAdapter.notifyItemChanged(position)
+
+                    Toast.makeText(this, "Alumno actualizado: $updatedName", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    override fun onDeleteClick(student: Student, position: Int) {
+        studentList.removeAt(position)
+        studentAdapter.notifyItemRemoved(position)
+        Toast.makeText(this, "Eliminado: ${student.name}", Toast.LENGTH_SHORT).show()
     }
 }
